@@ -31,6 +31,8 @@ serve(async (req) => {
       Suggest 2-3 specific policy interventions or measures that could help improve air quality. Focus on practical, evidence-based actions.`;
     }
 
+    console.log('Making request to Gemini API with prompt:', prompt);
+    
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
       {
@@ -48,7 +50,17 @@ serve(async (req) => {
       }
     );
 
+    console.log('Gemini API response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error response:', errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
+    console.log('Gemini API response data:', JSON.stringify(data));
+    
     const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to generate summary';
 
     console.log('AI summary generated:', generatedText);
